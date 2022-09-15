@@ -6,24 +6,32 @@ document.addEventListener("DOMContentLoaded", () => {
     const LINE_GAP: number = 3;
     const GAP: number = 15;
     const LINE_WIDTH: number = 6;
+    let xwins = 0, owins = 0;
 
     let xturn: boolean = true;
     let winningList: number[][] = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7],
                                     [2, 5, 8], [0, 4, 8], [6, 4, 2]];
     let currentBox: number = -1, boxX: number = 0, boxY: number = 0;
-    let gameRun: boolean = true;
     let winner: string = "";
     let boxState: string[] = ["", "", "", "", "", "", "", "", ""];
-    let winningCondition: number = -1;
     let turns: number = 0;
 
     // let board = new Board(ctx);
     // board.render();
 
     function startGame() {
+        xturn = true;
+        currentBox = -1, boxX= 0, boxY= 0;
+        winner = "";
+        boxState = ["", "", "", "", "", "", "", "", ""];
+        turns = 0;
+
         canvas.addEventListener('click', eventHandler);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawBoard();
     }
+
+    document.getElementById('restart')?.addEventListener('click', startGame);
 
     startGame();
 
@@ -46,7 +54,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if(boxState[condition[0]] === boxState[condition[1]] 
                 && boxState[condition[1]] === boxState[condition[2]]) {
                     winner = boxState[condition[0]];
-                    winningCondition = i;
                     if(winner !== "") break;
             }
         }
@@ -96,14 +103,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function draw() {
-        console.log(turns);
         turns++;
         if(xturn) {
-            drawX(boxX, boxY);
+            drawX(boxX, boxY, LINE_WIDTH, 70);
             boxState[currentBox] = "X";
         }
         else {
-            drawO(boxX, boxY);
+            drawO(boxX, boxY, LINE_WIDTH, 70);
             boxState[currentBox] = "O";
         }
         
@@ -119,16 +125,44 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function drawResult() {
         // drawAnimation(); // TODO
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // background
+        ctx.fillStyle = '#14bdac';
+        ctx.beginPath();
+        ctx.rect(0, 0, 601, 240);
+        ctx.fill();
+        ctx.closePath();
+
         if(winner === "") {
-            // draw
+            drawX(195, 55, LINE_WIDTH * 2, 100);
+            drawO(295, 55, LINE_WIDTH * 2, 100);
+
+            ctx.fillStyle = '#515857';
+            ctx.font = "30px Poppins bold";
+            ctx.fillText("DRAW!", 250, 200);
         }
 
         else if(winner === "X") {
-            //
+            xwins++;
+            document.getElementById('x-wins')!.innerHTML = xwins.toString();
+
+            drawX(225, 30, LINE_WIDTH * 2, 150);
+
+            ctx.fillStyle = '#515857';
+            ctx.font = "30px Poppins bold";
+            ctx.fillText("WINNER!", 235, 200);
         }
 
         else {
-            //
+            owins++;
+            document.getElementById('o-wins')!.innerHTML = owins.toString();
+
+            drawO(225, 30, LINE_WIDTH * 2, 150);
+
+            ctx.fillStyle = '#515857';
+            ctx.font = "30px Poppins bold";
+            ctx.fillText("WINNER!", 235, 200);
         }
     }
 
@@ -159,33 +193,32 @@ document.addEventListener("DOMContentLoaded", () => {
         ctx.closePath();
     }
 
-    function drawX(x: number, y: number) {
+    function drawX(x: number, y: number, width: number, size: number) {
         ctx.save();
-        x += 35; y += 35;
+        x += size / 2; y += size / 2;
         ctx.translate(x, y);
 
-        const GAP: number = 5 + LINE_GAP;
-        const p: number = Math.sin(Math.PI / 4) * (LINE_WIDTH / 2);
-        const X_LENGTH = 70 - GAP * 2;
+        const GAP: number = width + LINE_GAP;
+        const X_LENGTH = size - GAP * 2;
         
         ctx.fillStyle = 'rgb(84, 84, 84)';
         ctx.beginPath();
         ctx.rotate(-45 * Math.PI / 180);
-        ctx.fillRect(-35 + GAP, -LINE_WIDTH/2, X_LENGTH, LINE_WIDTH);
+        ctx.fillRect(-size/2 + GAP, -width/2, X_LENGTH, width);
         ctx.closePath();
 
         ctx.beginPath();
         ctx.rotate(90 * Math.PI / 180);
-        ctx.fillRect(-35 + GAP, -LINE_WIDTH/2, X_LENGTH, LINE_WIDTH);
+        ctx.fillRect(-size/2 + GAP, -width/2, X_LENGTH, width);
         ctx.closePath();
 
         ctx.restore();
     }
 
-    function drawO(x: number, y: number) {
-        x += 35; y += 35;
-        const GAP: number = 5 + LINE_GAP;
-        const LENGTH = 70 - GAP * 2 - 10;
+    function drawO(x: number, y: number, width: number, size: number) {
+        x += size / 2; y += size / 2;
+        const GAP: number = width + LINE_GAP;
+        const LENGTH = size - GAP * 2 - 10;
 
         ctx.fillStyle = 'rgb(242, 235, 211)';
         ctx.beginPath();
@@ -195,7 +228,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         ctx.fillStyle = '#14bdac';
         ctx.beginPath();
-        ctx.ellipse(x, y, LENGTH / 2 - LINE_WIDTH, LENGTH / 2 - LINE_WIDTH, 0, 0, 2 * Math.PI);
+        ctx.ellipse(x, y, LENGTH / 2 - width, LENGTH / 2 - width, 0, 0, 2 * Math.PI);
         ctx.fill();
         ctx.closePath();
     }
